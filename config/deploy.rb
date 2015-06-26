@@ -28,41 +28,46 @@ set :use_sudo, true
 namespace :forever do
   desc 'Install forever globally'
   task :setup do
-    on roles(:worker), in: :parallel do
+    on roles(:all), in: :parallel do
       execute "sudo npm install -g forever"
     end
   end
 
   desc 'Stop node script'
   task :stop do
-    on roles(:worker), in: :parallel do
+    on roles(:all), in: :parallel do
       execute "sudo forever stopall --killSignal=SIGTERM; true"
     end
   end
 
+  desc 'Start node script'
   task :start do
-    on roles(:worker), in: :parallel do |host|
-      execute "sudo NODE_ENV=production forever start -s #{release_path}/app.js"
+    on roles(:all), in: :parallel do |host|
+      execute "sudo NODE_ENV=production forever start -s #{release_path}/index.js"
     end
   end
 
+  desc 'Clean forever logs'
   task :cleanlogs do
-    on roles(:worker), in: :parallel do
+    on roles(:all), in: :parallel do
       execute "sudo forever cleanlogs"
     end
   end
 end
 
 namespace :npm do
+  desc 'Symlink app npm modules to shared path'
   task :symlink do
-    on roles(:worker), in: :parallel do
+    on roles(:all), in: :parallel do
+      execute "mkdir -p #{shared_path}/node_modules"
       execute "rm -rf #{release_path}/node_modules && ln -s #{shared_path}/node_modules/ #{release_path}/node_modules"
     end
   end
 
+  desc 'Install app npm modules'
   task :install do
-    on roles(:worker), in: :parallel do
-      execute "cd #{release_path}/ && sudo npm install --production --loglevel silent --unsafe-perm"
+    on roles(:all), in: :parallel do
+      execute "cd #{release_path}/ && npm install --production"
     end
   end
 end
@@ -74,7 +79,6 @@ namespace :deploy do
   desc 'Restart node script'
   after :publishing, :restart do
     invoke 'forever:stop'
-    invoke 'forever:clean_logs'
     invoke 'forever:cleanlogs'
     sleep 3
     invoke 'forever:start'

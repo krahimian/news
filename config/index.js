@@ -4,7 +4,7 @@ var fs = require('fs');
 var path = require('path');
 
 var config;
-var config_file = '/home/deploy/shared/apps.json';
+var config_file = '/home/deploy/apps.json';
 
 if (fs.existsSync(config_file)) {
 
