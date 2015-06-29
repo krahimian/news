@@ -5,6 +5,9 @@ var uuid = require('uuid');
 var async = require('async');
 var Fetcher = require('./fetcher');
 
+var UPDATE_TIME = 1000 * 60 * 15; //15 minutes
+var FAILED_TIME = 1000 * 60 * 5; // 5 minutes
+
 var Worker = function() {
     return {
 	name: [os.hostname(), uuid.v4(), process.pid].join(':'),
@@ -29,7 +32,6 @@ var Worker = function() {
 	},
 
 	_save: function(source, cb) {
-	    console.log(source);
 	    var self = this;
 	    var update = {
 		update_agent: null,
@@ -50,12 +52,15 @@ var Worker = function() {
 		});
 	    }
 
+	    var sql = self.db('posts').insert(source.posts).toString();
+	    sql = sql + ' ON DUPLICATE KEY UPDATE score = VALUES(score), social_score = VALUES(social_score)';
+
 	    async.series([
 		function(next) {
 		    self.db('sources').update(update).where('id', source.id).asCallback(next);
 		},
 		function(next) {
-		    self.db('posts').insert(source.posts).asCallback(next);
+		    self.db.raw(sql).asCallback(next);
 		}
 	    ], cb);
 	},
@@ -63,7 +68,6 @@ var Worker = function() {
 	_run: function(source, done) {
 	    this.log.debug('queue length', this.queue.length());
 	    var fetcher = Fetcher(source.url);
-	    console.log(fetcher);
 	    async.applyEachSeries([this._start.bind(this), fetcher.build.bind(fetcher), fetcher.getPosts.bind(fetcher), this._save.bind(this)], source, done);
 	},
 
@@ -77,9 +81,9 @@ var Worker = function() {
 	    this.db('sources').select().where(function() {
 		this.where('update_agent', null);
 		this.where('update_started_at', null);
-		this.where('updated_at', '<', new Date(now.setTime(now.getTime() - 1800000)));
+		this.where('updated_at', '<', new Date(now.setTime(now.getTime() - UPDATE_TIME)));
 	    }).orWhere(function() {
-		this.where('update_started_at', '<', new Date(now.setTime(now.getTime() - 600000)));
+		this.where('update_started_at', '<', new Date(now.setTime(now.getTime() - FAILED_TIME)));
 	    }).orWhere(function() {
 		this.whereNull('created_at');
 	    }).orderByRaw('RAND()').then(function(sources) {

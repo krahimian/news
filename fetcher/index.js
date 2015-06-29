@@ -30,30 +30,32 @@ var HTMLParser = require('fast-html-parser');
 
 var fetchers = [];
 
-var defaultFetcher = {
+var defaultFetcher = function() {
+    return {
 
-    type: 'default',
+	type: 'default',
 
-    getTitle: function(html) {
-	var root = HTMLParser.parse(html);
-	return root.querySelector('title').rawText;
-    },
+	getTitle: function(html) {
+	    var root = HTMLParser.parse(html);
+	    return root.querySelector('title').rawText;
+	},
 
-    build: function(source, cb) {
-	var self = this;
-	
-	request({
-	    method: 'GET',
-	    uri: source.url,
-	    gzip: true
-	}, function (error, response, body) {
+	build: function(source, cb) {
+	    var self = this;
 
-	    source.title = self.getTitle(body);
+	    request({
+		method: 'GET',
+		uri: source.url,
+		gzip: true
+	    }, function (error, response, body) {
 
-	    cb(error);
+		source.title = self.getTitle(body);
 
-	});
-    }
+		cb(error);
+
+	    });
+	}
+    };
 };
 
 fs.readdirSync(path.join(__dirname, 'types')).forEach(function(file) {
@@ -65,7 +67,9 @@ var Fetcher = function(url) {
 	return element.re.test(url);
     });
 
-    if (!fetcher) fetcher = defaultFetcher;
+    if (!fetcher) fetcher = defaultFetcher();
+    else fetcher = fetcher.init();
+
     fetcher.url = url;
 
     return fetcher;
