@@ -86,7 +86,7 @@ var LinkedInScore = function(url) {
 	    json: true
 	}, function(err, res, body) {
 	    var result = { count: 0 };
-	    if (!err && res.statusCode === 200) {
+	    if (!err && res.statusCode === 200 && body && body.count) {
 		result.count = body.count;
 	    }
 	    cb(err, result);
@@ -142,7 +142,7 @@ var PinterestScore = function(url) {
 		var endPos = body.indexOf('})');
 		var jsonString = body.substring(startPos+1, endPos+1);
 		json = JSON.parse(jsonString);
-		result.count = json.count;
+		if (json.count) result.count = json.count;
 	    }
 	    cb(err, result);
 	});
