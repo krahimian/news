@@ -77,6 +77,12 @@ module.exports = {
 		    if (response.headers['etag']) source.etag = response.headers['etag'];
 		    if (response.headers['last-modified']) source.last_modified = response.headers['last-modified'];
 
+		    if (!body.data) {
+			source.posts = [];
+			cb('No data returned from reddit for: ' + options.uri);
+			return;
+		    }
+
 		    async.mapLimit(body.data.children, 3, self.buildPost.bind(self), function(err, results) {
 			source.posts = results;
 			cb(err);
