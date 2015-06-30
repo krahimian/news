@@ -1,4 +1,3 @@
-var request = require('request');
 var social = require('../../modules/social');
 var async = require('async');
 var Firebase = require('firebase');

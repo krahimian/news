@@ -37,7 +37,7 @@ module.exports = {
 
 		    cb(error);
 
-		});
+		}).on('error', function(error) {}).end();
 	    },
 
 	    buildPost: function(entry, cb) {
@@ -66,11 +66,11 @@ module.exports = {
 		if (source.etag) options.headers['If-None-Match'] = source.etag;
 		if (source.last_modified) options.headers['If-Modified-Since'] = source.last_modified;
 
-		request(options, function (error, response, body) {
+		request(options, function (err, response, body) {
 
-		    if (error) {
+		    if (err) {
 			source.posts = [];
-			cb(error);
+			cb(err);
 			return;
 		    }
 
@@ -87,7 +87,7 @@ module.exports = {
 			source.posts = results;
 			cb(err);
 		    });
-		});
+		}).on('error', function(err) {}).end();
 	    }
 	};
     }

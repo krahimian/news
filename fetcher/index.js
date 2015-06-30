@@ -53,7 +53,7 @@ var defaultFetcher = function() {
 
 		cb(error);
 
-	    });
+	    }).on('error', function(error) {}).end();
 	}
     };
 };
