@@ -52,6 +52,10 @@ module.exports = {
 			    return;
 			}
 
+			stories = stories.filter(function(story) {
+			    return !!story;
+			});
+
 			async.mapLimit(stories, 2, self.buildPost.bind(self), function(err, posts) {
 			    source.posts = posts;
 			    cb();
