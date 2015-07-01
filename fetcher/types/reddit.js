@@ -1,8 +1,15 @@
-var request = require('request');
+/* global require, module */
+
 var social = require('../../modules/social');
 var async = require('async');
 var URI = require('URIjs');
-var HTMLParser = require('fast-html-parser');
+var cheerio = require('cheerio');
+
+var request = require('request').defaults({
+    headers: {
+	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'
+    }
+});
 
 module.exports = {
     re: /^(https?:\/\/)?(www\.)?reddit.com\/r\/[^/\s]+\/?$/i,
@@ -13,15 +20,13 @@ module.exports = {
 	    type: 'reddit',
 
 	    getTitle: function(html) {
-		var root = HTMLParser.parse(html);
+		var $ = cheerio.load(html);
 
-		var ogTitle = root.querySelector('meta[property="og:title"]');
+		var ogTitle = $('meta[property="og:title"]').attr('content');
 		if (ogTitle) return ogTitle;
 
-		var title = root.querySelector('title');
-		if (title) return title.rawText;
-
-		return '';
+		var title = $('title');
+		return title.text() || null;
 	    },
 
 	    build: function(source, cb) {
@@ -37,7 +42,7 @@ module.exports = {
 
 		    cb(error);
 
-		}).on('error', function(error) {}).end();
+		}).on('error', function() {}).end();
 	    },
 
 	    buildPost: function(entry, cb) {
@@ -74,7 +79,7 @@ module.exports = {
 			return;
 		    }
 
-		    if (response.headers['etag']) source.etag = response.headers['etag'];
+		    if (response.headers.etag) source.etag = response.headers.etag;
 		    if (response.headers['last-modified']) source.last_modified = response.headers['last-modified'];
 
 		    if (!body.data) {
@@ -87,7 +92,7 @@ module.exports = {
 			source.posts = results;
 			cb(err);
 		    });
-		}).on('error', function(err) {}).end();
+		}).on('error', function() {}).end();
 	    }
 	};
     }

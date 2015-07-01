@@ -1,0 +1,93 @@
+/* global require, module */
+
+var social = require('../../modules/social');
+var async = require('async');
+var URI = require('URIjs');
+var cheerio = require('cheerio');
+
+var request = require('request').defaults({
+    headers: {
+	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'
+    }
+});
+
+module.exports = {
+    re: /^(https?:\/\/)?(www\.)?twitter.com\/[A-Za-z0-9_]{1,20}\/?$/i,
+
+    init: function() {
+	return {
+
+	    type: 'twitter',
+
+	    getTitle: function(html) {
+		var $ = cheerio.load(html);
+		
+		var title = $('title');
+		return title.text() || null;
+	    },
+
+	    build: function(source, cb) {
+		var self = this;
+
+		request({
+		    method: 'GET',
+		    uri: source.url,
+		    gzip: true
+		}, function (error, response, body) {
+
+		    source.title = self.getTitle(body);
+		    source.html = body;
+
+		    cb(error);
+
+		}).on('error', function() {}).end();
+	    },
+
+	    buildPost: function(tweet, cb) {
+		social.all(tweet.content_url || tweet.url,  function(err, result) {
+		    tweet.social_score = result.total;
+		    cb(err);
+		});
+	    },
+
+	    getPosts: function(source, cb) {
+		source.posts = [];
+
+		if (!source.html) {
+		    cb('missing html');
+		    return;
+		}
+
+		var $ = cheerio.load(source.html);
+
+		var tweets = $('li.js-stream-item[data-item-type="tweet"][data-item-id]').map(function() {
+
+		    var tweet = $(this).find('p.tweet-text');		    
+		    var content_url = tweet.find('a[data-expanded-url]').attr('data-expanded-url');
+
+		    if (!content_url)
+			return undefined;
+
+		    var id = $(this).attr('data-item-id');
+		    var fav_count = $(this).find('.js-actionFavorite:first-of-type .ProfileTweet-actionCountForPresentation').text();
+		    fav_count = fav_count ? parseInt(fav_count, 10) : 0;
+		    var retweet_count = $(this).find('.js-actionRetweet:first-of-type .ProfileTweet-actionCountForPresentation').text();
+		    retweet_count = retweet_count ? parseInt(retweet_count, 10) : 0;
+
+		    return {
+			title: tweet.text(),
+			content_url: content_url,
+			score: fav_count + retweet_count,
+			url: new URI(source.url).segment(1, 'status').segment(2, id).toString()
+		    };
+		}).get();
+
+		source.posts = tweets;
+
+		async.eachLimit(source.posts, 3, this.buildPost.bind(this), function(err) {
+		    cb(err);
+		});
+	    }
+	};
+    }
+};

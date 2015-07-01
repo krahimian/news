@@ -1,7 +1,9 @@
+/* global require, process */
+
 var config = require('./config');
 var log = require('log')(config.log);
 var Worker = require('./worker');
-var worker = Worker();
+var worker = new Worker();
 
 var knex = require('knex')({
     client: 'mysql',

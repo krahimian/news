@@ -1,8 +1,9 @@
+/* global require, module */
+
 var social = require('../../modules/social');
 var async = require('async');
 var Firebase = require('firebase');
 var api = new Firebase('https://hacker-news.firebaseio.com/v0');
-var URI = require('URIjs');
 
 function fetchItem(id, cb) {
     api.child('item/' + id).once('value', function(snapshot) {
