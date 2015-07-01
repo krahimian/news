@@ -1,4 +1,4 @@
-/* global require, process */
+/* global require, process, setTimeout, module */
 
 var os = require('os');
 var uuid = require('uuid');
@@ -16,7 +16,7 @@ var Worker = function() {
 	    this.db = options.db;
 	    this.log = options.log;
 
-	    this.queue = async.queue(this._run.bind(this), 10);
+	    this.queue = async.queue(this._run.bind(this), 1);
 	    this.queue.drain = this._check.bind(this);
 
 	    this.log.debug('worker:', this.name);
@@ -67,7 +67,7 @@ var Worker = function() {
 
 	_run: function(source, done) {
 	    this.log.debug('queue length', this.queue.length());
-	    var fetcher = Fetcher(source.url);
+	    var fetcher = new Fetcher(source.url);
 	    async.applyEachSeries([this._start.bind(this), fetcher.build.bind(fetcher), fetcher.getPosts.bind(fetcher), this._save.bind(this)], source, done);
 	},
 

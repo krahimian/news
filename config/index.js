@@ -1,7 +1,6 @@
-/* global __dirname, require, module */
+/* global require, module */
 
 var fs = require('fs');
-var path = require('path');
 
 var config;
 var config_file = '/home/deploy/apps.json';
