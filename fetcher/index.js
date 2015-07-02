@@ -91,8 +91,8 @@ var defaultFetcher = function(opts) {
 
 		var re = /^(\s)?<\?xml version=("|')1\./i;
 
-		var isXML = re.test(body);
-		source.feed = isXML ? source.url : self.discoverFeed(body, source.url);
+		source.isXML = re.test(body);
+		source.feed = source.isXML ? source.url : self.discoverFeed(body, source.url);
 		source.title = self.getTitle(body);
 
 		cb();
@@ -142,6 +142,10 @@ var defaultFetcher = function(opts) {
 
 
 	    feedparser.on('error', cb);
+
+	    feedparser.on('meta', function(meta) {
+		if (source.isXML) source.title = meta.title;
+	    });
 
 	    feedparser.on('end', function() {
 		async.mapLimit(items, 3, self.buildPost.bind(self), function(err, results) {
