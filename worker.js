@@ -36,12 +36,12 @@ var Worker = function() {
 	    var update = {
 		update_agent: null,
 		update_started_at: null,
-		title: source.title,
 		updated_at: new Date()
 	    };
 
 	    if (!source.created_at) update.created_at = new Date();
 	    if (source.etag) update.etag = source.etag;
+	    if (source.title) update.title = source.title;
 	    if (source.last_modified) update.last_modified = source.last_modified;
 
 	    if (source.posts) {
@@ -67,7 +67,9 @@ var Worker = function() {
 
 	_run: function(source, done) {
 	    this.log.debug('queue length', this.queue.length());
-	    var fetcher = new Fetcher(source.url);
+	    var fetcher = new Fetcher(source.url, {
+		log: this.log
+	    });
 	    async.applyEachSeries([this._start.bind(this), fetcher.build.bind(fetcher), fetcher.getPosts.bind(fetcher), this._save.bind(this)], source, done);
 	},
 

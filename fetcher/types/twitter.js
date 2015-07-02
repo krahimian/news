@@ -14,14 +14,20 @@ var request = require('request').defaults({
 module.exports = {
     re: /^(https?:\/\/)?(www\.)?twitter.com\/[A-Za-z0-9_]{1,20}\/?$/i,
 
-    init: function() {
+    init: function(opts) {
 	return {
 
 	    type: 'twitter',
 
 	    getTitle: function(html) {
-		var $ = cheerio.load(html);
-		
+		var $;
+		try {
+		    $ = cheerio.load(html);
+		} catch(e) {
+		    opts.log.error(e);
+		}
+		if (!$) return null;
+
 		var title = $('title');
 		return title.text() || null;
 	    },
@@ -35,10 +41,15 @@ module.exports = {
 		    gzip: true
 		}, function (error, response, body) {
 
+		    if (error) {
+			cb(error);
+			return;
+		    }
+
 		    source.title = self.getTitle(body);
 		    source.html = body;
 
-		    cb(error);
+		    cb();
 
 		}).on('error', function() {}).end();
 	    },
