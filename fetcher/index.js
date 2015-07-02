@@ -38,13 +38,19 @@ var request = require('request').defaults({
 
 var fetchers = [];
 
-var defaultFetcher = function() {
+var defaultFetcher = function(opts) {
     return {
 
 	type: 'default',
 
 	getTitle: function(html) {
-	    var $ = cheerio.load(html);
+	    var $;
+	    try {
+		$ = cheerio.load(html);
+	    } catch(e) {
+		opts.log.error(e);
+	    }
+	    if (!$) return null;
 
 	    var ogTitle = $('meta[property="og:title"]').attr('content');
 	    if (ogTitle) return ogTitle;
@@ -54,7 +60,14 @@ var defaultFetcher = function() {
 	},
 
 	discoverFeed: function(html, url) {
-	    var $ = cheerio.load(html);
+	    var $;
+	    try {
+		$ = cheerio.load(html);
+	    } catch(e) {
+		opts.log.error(e);
+	    }
+	    if (!$) return null;
+
 	    var feedUrl = $('link[rel="alternate"][type*="rss"]').attr('href');
 	    if (feedUrl && feedUrl.charAt(0) === '/')
 		return new URI(feedUrl).absoluteTo(url).toString();
@@ -71,13 +84,18 @@ var defaultFetcher = function() {
 		gzip: true
 	    }, function (error, response, body) {
 
+		if (error) {
+		    cb(error);
+		    return;
+		}
+
 		var re = /^(\s)?<\?xml version=("|')1\./i;
 
 		var isXML = re.test(body);
 		source.feed = isXML ? source.url : self.discoverFeed(body, source.url);
 		source.title = self.getTitle(body);
 
-		cb(error);
+		cb();
 
 	    }).on('error', function() {}).end();
 	},
@@ -143,13 +161,13 @@ fs.readdirSync(path.join(__dirname, 'types')).forEach(function(file) {
     fetchers.push(require('./types/' + file));
 });
 
-var Fetcher = function(url) {
+var Fetcher = function(url, options) {
     var fetcher = fetchers.find(function(element) {
 	return element.re.test(url);
     });
 
-    if (!fetcher) fetcher = defaultFetcher();
-    else fetcher = fetcher.init();
+    if (!fetcher) fetcher = defaultFetcher(options);
+    else fetcher = fetcher.init(options);
 
     fetcher.url = url;
 

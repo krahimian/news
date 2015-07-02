@@ -14,13 +14,19 @@ var request = require('request').defaults({
 module.exports = {
     re: /^(https?:\/\/)?(www\.)?reddit.com\/r\/[^/\s]+\/?$/i,
 
-    init: function() {
+    init: function(opts) {
 	return {
 
 	    type: 'reddit',
 
 	    getTitle: function(html) {
-		var $ = cheerio.load(html);
+		var $;
+		try {
+		    $ = cheerio.load(html);
+		} catch(e) {
+		    opts.log.error(e);
+		}
+		if (!$) return null;
 
 		var ogTitle = $('meta[property="og:title"]').attr('content');
 		if (ogTitle) return ogTitle;
@@ -38,9 +44,14 @@ module.exports = {
 		    gzip: true
 		}, function (error, response, body) {
 
+		    if (error) {
+			cb(error);
+			return;
+		    }
+
 		    source.title = self.getTitle(body);
 
-		    cb(error);
+		    cb();
 
 		}).on('error', function() {}).end();
 	    },
