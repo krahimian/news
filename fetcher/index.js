@@ -105,7 +105,7 @@ var defaultFetcher = function(opts) {
 		cb(err, {
 		    title: entry.title,
 		    content_url: null,
-		    score: entry.comments,
+		    score: null,
 		    social_score: result.total,
 		    url: entry.link
 		});
