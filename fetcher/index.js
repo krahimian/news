@@ -121,11 +121,11 @@ var defaultFetcher = function(opts) {
 	    }
 
 	    var self = this;
-	    var req = request(source.feed);
-	    var feedparser = new FeedParser();
-
 	    source.posts = [];
 	    var items = [];
+
+	    var req = request(source.feed);
+	    var feedparser = new FeedParser();
 
 	    req.on('error', cb);
 
@@ -138,7 +138,7 @@ var defaultFetcher = function(opts) {
 		}
 
 		stream.pipe(feedparser);
-	    });
+	    }).end();
 
 
 	    feedparser.on('error', cb);
