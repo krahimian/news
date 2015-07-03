@@ -65,12 +65,30 @@ var Worker = function() {
 	    ], cb);
 	},
 
+	_updateScore: function(source, cb) {
+	    if (!source.id) {
+		cb();
+		return;
+	    }
+
+	    var self = this;
+	    var query = self.db('posts');
+	    query.select(self.db.raw('avg(score) as score_avg'));
+	    query.where('source_id', source.id);
+	    query.whereRaw('created_at >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -14 DAY)');
+	    query.then(function(result) {
+		self.db('sources').update(result[0]).where('id', source.id).asCallback(cb);
+	    }).catch(function(error) {
+		cb(error);
+	    });
+	},
+
 	_run: function(source, done) {
 	    this.log.debug('queue length', this.queue.length());
 	    var fetcher = new Fetcher(source.url, {
 		log: this.log
 	    });
-	    async.applyEachSeries([this._start.bind(this), fetcher.build.bind(fetcher), fetcher.getPosts.bind(fetcher), this._save.bind(this)], source, done);
+	    async.applyEachSeries([this._start.bind(this), fetcher.build.bind(fetcher), fetcher.getPosts.bind(fetcher), this._save.bind(this), this._updateScore.bind(this)], source, done);
 	},
 
 	_check: function() {
