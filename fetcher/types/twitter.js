@@ -88,7 +88,7 @@ module.exports = {
 		    return {
 			title: tweet.text(),
 			content_url: content_url,
-			score: fav_count + retweet_count,
+			score: (fav_count + retweet_count) || 1,
 			url: new URI(source.url).segment(1, 'status').segment(2, id).toString()
 		    };
 		}).get();

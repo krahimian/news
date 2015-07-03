@@ -34,7 +34,7 @@ module.exports = {
 		    cb(err, {
 			title: post.title,
 			content_url: post.url,
-			score: post.score,
+			score: post.score || 1,
 			social_score: result.total,			    
 			url: 'https://news.ycombinator.com/item?id=' + post.id
 		    });
