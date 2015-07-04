@@ -19,6 +19,19 @@ module.exports = {
 
 	    type: 'medium user',
 
+	    getLogo: function(html) {
+		var $;
+		try {
+		    $ = cheerio.load(html);
+		} catch(e) {
+		    opts.log.error(e);
+		}
+		if (!$) return null;
+
+		var image = $('meta[property="og:image"]').attr('content');
+		return image || null;
+	    },
+
 	    build: function(source, cb) {
 		var self = this;
 
@@ -42,6 +55,8 @@ module.exports = {
 		    } catch(e) {
 			opts.log.error(e);
 		    }
+
+		    source.logo_url = self.getLogo(body);
 
 		    cb();
 		}).on('error', function() {}).end();

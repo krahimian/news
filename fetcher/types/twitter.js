@@ -32,6 +32,20 @@ module.exports = {
 		return title.text() || null;
 	    },
 
+	    getLogo: function(html) {
+		var $;
+		try {
+		    $ = cheerio.load(html);
+		} catch(e) {
+		    opts.log.error(e);
+		}
+		if (!$) return null;
+
+		var url = $('.ProfileAvatar-image').attr('src');
+
+		return url || null;
+	    },
+
 	    build: function(source, cb) {
 		var self = this;
 
@@ -47,6 +61,7 @@ module.exports = {
 		    }
 
 		    source.title = self.getTitle(body);
+		    source.logo_url = self.getLogo(body);
 		    source.html = body;
 
 		    cb();

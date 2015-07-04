@@ -24,8 +24,13 @@ module.exports = {
 		return 'Hacker News';
 	    },
 
+	    getLogo: function() {
+		return 'https://news.ycombinator.com/favicon.ico';
+	    },
+
 	    build: function(source, cb) {
 		source.title = this.getTitle();
+		source.logo_url = this.getLogo();
 		cb();
 	    },
 
