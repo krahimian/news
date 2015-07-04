@@ -52,6 +52,7 @@ var Worker = function() {
 		if (source.etag) update.etag = source.etag;
 		if (source.title) update.title = source.title;
 		if (source.last_modified) update.last_modified = source.last_modified;
+		if (source.logo_url) update.logo_url = source.logo_url;
 	    }
 
 	    if (source.posts) {

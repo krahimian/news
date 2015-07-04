@@ -59,6 +59,32 @@ var defaultFetcher = function(opts) {
 	    return title.text() || null;
 	},
 
+	getLogo: function(html) {
+	    var $;
+	    try {
+		$ = cheerio.load(html);
+	    } catch(e) {
+		opts.log.error(e);
+	    }
+	    if (!$) return null;
+
+	    var og = $('meta[property="og:image"]').attr('content');
+	    if (og) return og;
+
+	    var tw = $('meta[property="twitter:image:src"]').attr('content');
+	    if (tw) return tw;
+
+	    //TODO: apple icons
+
+	    var shortcut = $('link[rel="shortcut icon"]').attr('href');
+	    if (shortcut) return shortcut;
+
+	    var icon = $('link[rel="icon"]').attr('href');
+	    if (icon) return icon;
+
+	    return null;
+	},
+
 	discoverFeed: function(html, url) {
 	    var $;
 	    try {
@@ -145,6 +171,7 @@ var defaultFetcher = function(opts) {
 
 	    feedparser.on('meta', function(meta) {
 		if (source.isXML) source.title = meta.title;
+		if (source.isXML) source.logo_url = meta.image ? meta.image.url : meta.favicon;
 	    });
 
 	    feedparser.on('end', function() {
