@@ -116,7 +116,7 @@ var defaultFetcher = function(opts) {
 
 	    if (!source.feed) {
 		source.posts = [];
-		cb();
+		cb('Missing feed: ' + source.url);
 		return;
 	    }
 

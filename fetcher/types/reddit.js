@@ -95,7 +95,8 @@ module.exports = {
 
 		    if (!body.data) {
 			source.posts = [];
-			cb('No data returned from reddit for: ' + options.uri);
+			source.fetch_failed = true;
+			cb();
 			return;
 		    }
 
