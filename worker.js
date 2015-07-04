@@ -31,18 +31,28 @@ var Worker = function() {
 	    }).where('id', source.id).asCallback(cb);
 	},
 
-	_save: function(source, cb) {
+	_save: function(source, cb, err) {
 	    var self = this;
-	    var update = {
-		update_agent: null,
-		update_started_at: null,
-		updated_at: new Date()
-	    };
 
-	    if (!source.created_at) update.created_at = new Date();
-	    if (source.etag) update.etag = source.etag;
-	    if (source.title) update.title = source.title;
-	    if (source.last_modified) update.last_modified = source.last_modified;
+	    var update = {};
+
+	    if (err || source.fetch_failed) {
+		if (err) self.log.error(err);
+
+		update.fetch_failures = source.fetch_failures || 0;
+		update.fetch_failures++;
+
+	    } else {
+
+		update.update_agent = null;
+		update.update_started_at = null;
+		update.updated_at = new Date();
+
+		if (!source.created_at) update.created_at = new Date();
+		if (source.etag) update.etag = source.etag;
+		if (source.title) update.title = source.title;
+		if (source.last_modified) update.last_modified = source.last_modified;
+	    }
 
 	    if (source.posts) {
 		source.posts.forEach(function(post) {
@@ -88,7 +98,12 @@ var Worker = function() {
 	    var fetcher = new Fetcher(source.url, {
 		log: this.log
 	    });
-	    async.applyEachSeries([this._start.bind(this), fetcher.build.bind(fetcher), fetcher.getPosts.bind(fetcher), this._save.bind(this), this._updateScore.bind(this)], source, done);
+	    async.applyEachSeries([
+		this._start.bind(this),
+		fetcher.build.bind(fetcher),
+		fetcher.getPosts.bind(fetcher),
+		this._updateScore.bind(this)
+	    ], source, this._save.bind(this, source, done));
 	},
 
 	_check: function() {
@@ -110,9 +125,7 @@ var Worker = function() {
 		self.log.debug('found...', sources.length);
 
 		if (sources.length) {
-		    self.queue.push(sources, function(err) {
-			if (err) self.log.error(err);
-		    });
+		    self.queue.push(sources);
 		} else if (!self.queue.length()) {
 		    setTimeout(function() {
 			self._check();
