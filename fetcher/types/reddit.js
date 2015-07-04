@@ -44,7 +44,7 @@ module.exports = {
 		}
 		if (!$) return null;
 
-		var url = $('header-img').attr('src');
+		var url = $('#header-img').attr('src');
 
 		return url || null;
 	    },
