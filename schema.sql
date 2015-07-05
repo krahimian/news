@@ -9,6 +9,7 @@ CREATE TABLE `sources` (
   `last_modified` datetime DEFAULT NULL, 
   `fetch_failures` int(11) NOT NULL DEFAULT 0,
   `score_avg` int(11) NOT NULL DEFAULT 1,
+  `social_score_avg` int(11) NOT NULL DEFAULT 1,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `update_agent` varchar(255) DEFAULT NULL,
