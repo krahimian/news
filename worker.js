@@ -94,6 +94,24 @@ var Worker = function() {
 	    });
 	},
 
+	_updateSocialScore: function(source, cb) {
+	    if (!source.id) {
+		cb();
+		return;
+	    }
+
+	    var self = this;
+	    var query = self.db('posts');
+	    query.select(self.db.raw('avg(social_score) as social_score_avg'));
+	    query.where('source_id', source.id);
+	    query.whereRaw('created_at >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -14 DAY)');
+	    query.then(function(result) {
+		self.db('sources').update(result[0]).where('id', source.id).asCallback(cb);
+	    }).catch(function(error) {
+		cb(error);
+	    });
+	},
+
 	_run: function(source, done) {
 	    this.log.debug('queue length', this.queue.length());
 	    var fetcher = new Fetcher(source.url, {
@@ -103,7 +121,8 @@ var Worker = function() {
 		this._start.bind(this),
 		fetcher.build.bind(fetcher),
 		fetcher.getPosts.bind(fetcher),
-		this._updateScore.bind(this)
+		this._updateScore.bind(this),
+		this._updateSocialScore.bind(this)
 	    ], source, this._save.bind(this, source, done));
 	},
 
