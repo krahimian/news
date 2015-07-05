@@ -64,7 +64,7 @@ var Worker = function() {
 	    }
 
 	    var sql = self.db('posts').insert(source.posts).toString();
-	    sql = sql + ' ON DUPLICATE KEY UPDATE score = VALUES(score), social_score = VALUES(social_score)';
+	    sql = sql + ' ON DUPLICATE KEY UPDATE score = VALUES(score), social_score = VALUES(social_score), updated_at = VALUES(updated_at)';
 
 	    async.series([
 		function(next) {
