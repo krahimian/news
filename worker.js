@@ -31,13 +31,12 @@ var Worker = function() {
 	    }).where('id', source.id).asCallback(cb);
 	},
 
-	_save: function(source, cb, err) {
-	    var self = this;
+	_saveSource: function(source, cb, err) {
 
 	    var update = {};
 
 	    if (err || source.fetch_failed) {
-		if (err) self.log.error(err);
+		if (err) this.log.error(err);
 
 		update.fetch_failures = source.fetch_failures || 0;
 		update.fetch_failures++;
@@ -55,6 +54,10 @@ var Worker = function() {
 		if (source.logo_url) update.logo_url = source.logo_url;
 	    }
 
+	    this.db('sources').update(update).where('id', source.id).asCallback(cb);
+	},
+
+	_savePosts: function(source, cb) {
 	    if (source.posts) {
 		source.posts.forEach(function(post) {
 		    post.source_id = source.id;
@@ -63,17 +66,9 @@ var Worker = function() {
 		});
 	    }
 
-	    var sql = self.db('posts').insert(source.posts).toString();
+	    var sql = this.db('posts').insert(source.posts).toString();
 	    sql = sql + ' ON DUPLICATE KEY UPDATE score = VALUES(score), social_score = VALUES(social_score), updated_at = VALUES(updated_at)';
-
-	    async.series([
-		function(next) {
-		    self.db('sources').update(update).where('id', source.id).asCallback(next);
-		},
-		function(next) {
-		    self.db.raw(sql).asCallback(next);
-		}
-	    ], cb);
+	    this.db.raw(sql).asCallback(cb);
 	},
 
 	_updateScore: function(source, cb) {
@@ -121,9 +116,10 @@ var Worker = function() {
 		this._start.bind(this),
 		fetcher.build.bind(fetcher),
 		fetcher.getPosts.bind(fetcher),
+		this._savePosts.bind(this),
 		this._updateScore.bind(this),
 		this._updateSocialScore.bind(this)
-	    ], source, this._save.bind(this, source, done));
+	    ], source, this._saveSource.bind(this, source, done));
 	},
 
 	_check: function() {
