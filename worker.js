@@ -3,6 +3,7 @@
 var os = require('os');
 var uuid = require('uuid');
 var async = require('async');
+var request = require('request');
 var Fetcher = require('./fetcher');
 
 var UPDATE_TIME = 1000 * 60 * 15; //15 minutes
@@ -55,6 +56,46 @@ var Worker = function() {
 	    }
 
 	    this.db('sources').update(update).where('id', source.id).asCallback(cb);
+	},
+
+	_getEmbeds: function(source, cb) {
+	    var self = this;
+
+	    var getIframely = function(post, done) {
+		request({
+		    method: 'GET',
+		    url: 'http://open.iframe.ly/api/oembed?url=' + (post.content_url || post.url) + '&origin=krahimian',
+		    json: true,
+		    gzip: true
+		}, function(err, res, body) {
+		    if (err) {
+			done(err);
+			return;
+		    }
+
+		    self.db('posts').update({
+			embed: body.html || '<div></div>',
+			embed_id: body.id || null
+		    }).where('id', post.id).asCallback(done);
+		});
+	    };
+
+	    if (!source.id) {
+		cb();
+		return;
+	    }
+
+	    var query = self.db('posts');
+	    query.select();
+	    query.where('source_id', source.id);
+	    query.whereNull('embed');
+	    query.orderBy('created_at','desc');
+	    query.limit(20);
+	    query.then(function(result) {
+		async.eachSeries(result, getIframely, cb);
+	    }).catch(function(error) {
+		cb(error);
+	    });
 	},
 
 	_savePosts: function(source, cb) {
@@ -117,6 +158,7 @@ var Worker = function() {
 		fetcher.build.bind(fetcher),
 		fetcher.getPosts.bind(fetcher),
 		this._savePosts.bind(this),
+		this._getEmbeds.bind(this),
 		this._updateScore.bind(this),
 		this._updateSocialScore.bind(this)
 	    ], source, this._saveSource.bind(this, source, done));

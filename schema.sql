@@ -24,6 +24,8 @@ CREATE TABLE `posts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source_id` int(11) NOT NULL,
   `title` varchar(255) DEFAULT NULL,
+  `embed` TEXT DEFAULT NULL,
+  `embed_id` varchar(12) DEFAULT NULL,
   `content_url` varchar(255) DEFAULT NULL,
   `url` varchar(255) DEFAULT NULL,
   `score` int(11) NOT NULL DEFAULT 1,
