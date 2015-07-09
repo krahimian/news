@@ -89,6 +89,7 @@ var Worker = function() {
 	    query.select();
 	    query.where('source_id', source.id);
 	    query.whereNull('embed');
+	    query.whereRaw('created_at >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -14 DAY)');
 	    query.orderBy('created_at','desc');
 	    query.limit(20);
 	    query.then(function(result) {
