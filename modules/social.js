@@ -27,7 +27,7 @@ var SocialScore = function(url, cb) {
 
 var FacebookScore = function(url) {
     return function(cb) {
-	var fbUrl = 'https://api.facebook.com/method/fql.query?format=json&query=' + encodeURIComponent('SELECT total_count, share_count, like_count, comment_count, commentsbox_count, click_count FROM link_stat WHERE url="' + url + '"');
+	var fbUrl = 'https://api.facebook.com/method/fql.query?format=json&query=' + encodeURIComponent('SELECT share_count, like_count, comment_count, commentsbox_count, click_count FROM link_stat WHERE url="' + url + '"');
 
 	request({
 	    url: fbUrl,
