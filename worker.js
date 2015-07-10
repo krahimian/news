@@ -159,7 +159,6 @@ var Worker = function() {
 		fetcher.build.bind(fetcher),
 		fetcher.getPosts.bind(fetcher),
 		this._savePosts.bind(this),
-		this._getEmbeds.bind(this),
 		this._updateScore.bind(this),
 		this._updateSocialScore.bind(this)
 	    ], source, this._saveSource.bind(this, source, done));
