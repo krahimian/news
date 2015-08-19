@@ -1,3 +1,7 @@
+///////////////////
+require('longjohn');
+///////////////////
+
 /* global require, process */
 
 var config = require('./config');
