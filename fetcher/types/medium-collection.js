@@ -86,7 +86,7 @@ module.exports = {
 		    }
 
 		    cb(null, count);
-		});
+		}).on('error', function() {}).end();
 	    },	    
 
 	    buildPost: function(entry, cb) {
