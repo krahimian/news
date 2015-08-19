@@ -79,12 +79,15 @@ module.exports = {
 		    }
 
 		    var count = 1;
-
+		    var data;
 		    try {
-			var data = body.substring(16);
+			data = body.substring(16);
 			count = JSON.parse(data).payload.value.count;
 		    } catch(e) {
-			opts.log.error(e);
+			opts.log.error(e, {
+			    id: id,
+			    data: data
+			});
 		    }
 
 		    cb(null, count);
