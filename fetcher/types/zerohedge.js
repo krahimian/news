@@ -45,7 +45,9 @@ module.exports = {
 		    source.html = body;
 
 		    cb();
-		}).on('error', function() {}).end();
+		}).on('error', function(err) {
+
+		}).end();
 	    },
 
 	    buildPost: function(entry, cb) {

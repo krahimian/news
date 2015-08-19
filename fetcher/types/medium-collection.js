@@ -59,7 +59,9 @@ module.exports = {
 		    source.logo_url = self.getLogo(body);
 
 		    cb();
-		}).on('error', function() {}).end();
+		}).on('error', function(err) {
+
+		}).end();
 	    },
 
 	    getStats: function(id, cb) {
@@ -86,7 +88,9 @@ module.exports = {
 		    }
 
 		    cb(null, count);
-		}).on('error', function() {}).end();
+		}).on('error', function(err) {
+
+		}).end();
 	    },	    
 
 	    buildPost: function(entry, cb) {

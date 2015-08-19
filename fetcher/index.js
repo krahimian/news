@@ -123,7 +123,9 @@ var defaultFetcher = function(opts) {
 
 		cb();
 
-	    }).on('error', function() {}).end();
+	    }).on('error', function(err) {
+
+	    }).end();
 	},
 
 	buildPost: function(entry, cb) {

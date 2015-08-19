@@ -77,7 +77,9 @@ var Worker = function() {
 			embed: body.html || '<div></div>',
 			embed_id: body.id || null
 		    }).where('id', post.id).asCallback(done);
-		}).on('error', function() {}).end();
+		}).on('error', function(err) {
+
+		}).end();
 	    };
 
 	    if (!source.id) {
