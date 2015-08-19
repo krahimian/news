@@ -35,8 +35,8 @@ var FacebookScore = function(url) {
 	}, function(err, res, body) {
 	    cb(err, body[0]);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -53,8 +53,8 @@ var TwitterScore = function(url) {
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -79,8 +79,8 @@ var RedditScore = function(url) {
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -97,8 +97,8 @@ var LinkedInScore = function(url) {
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -115,8 +115,8 @@ var StumbleUponScore = function(url) {
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -135,8 +135,8 @@ var GooglePlusScore = function(url) {
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -153,13 +153,17 @@ var PinterestScore = function(url) {
 		var startPos = body.indexOf('({');
 		var endPos = body.indexOf('})');
 		var jsonString = body.substring(startPos+1, endPos+1);
-		json = JSON.parse(jsonString);
-		if (json.count) result.count = json.count;
+		try {
+		    json = JSON.parse(jsonString);
+		    if (json.count) result.count = json.count;
+		} catch(e) {
+		    
+		}
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };
 
@@ -173,12 +177,16 @@ var VKScore = function(url) {
 	}, function(err, res, body) {
 	    var result = { count: 0 };
 	    if (!err && res.statusCode === 200) {
-		result.count = parseInt(/^VK\.Share\.count\(1, (\d+)\);$/ig.exec(body)[1], 10);
+		try {
+		    result.count = parseInt(/^VK\.Share\.count\(1, (\d+)\);$/ig.exec(body)[1], 10);
+		} catch(e) {
+		    console.log(e);
+		}
 	    }
 	    cb(err, result);
 	}).on('error', function(err) {
-
-	}).end();
+	    console.log(err);
+	});
     };
 };	    
 

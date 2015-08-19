@@ -124,8 +124,8 @@ var defaultFetcher = function(opts) {
 		cb();
 
 	    }).on('error', function(err) {
-
-	    }).end();
+		opts.log.error(err);
+	    });
 	},
 
 	buildPost: function(entry, cb) {
@@ -166,7 +166,7 @@ var defaultFetcher = function(opts) {
 		}
 
 		stream.pipe(feedparser);
-	    }).end();
+	    });
 
 
 	    feedparser.on('error', cb);
