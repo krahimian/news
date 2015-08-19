@@ -34,7 +34,9 @@ var FacebookScore = function(url) {
 	    json: true
 	}, function(err, res, body) {
 	    cb(err, body[0]);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -50,7 +52,9 @@ var TwitterScore = function(url) {
 		result.count = body.count;
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -74,7 +78,9 @@ var RedditScore = function(url) {
 		});
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -90,7 +96,9 @@ var LinkedInScore = function(url) {
 		result.count = body.count;
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -106,7 +114,9 @@ var StumbleUponScore = function(url) {
 		result.views = parseInt(body.result.views, 10);
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -124,7 +134,9 @@ var GooglePlusScore = function(url) {
 		result.count = count ? parseInt(count[1], 10) : 0;
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -145,7 +157,9 @@ var PinterestScore = function(url) {
 		if (json.count) result.count = json.count;
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };
 
@@ -162,7 +176,9 @@ var VKScore = function(url) {
 		result.count = parseInt(/^VK\.Share\.count\(1, (\d+)\);$/ig.exec(body)[1], 10);
 	    }
 	    cb(err, result);
-	}).on('error', function() {}).end();
+	}).on('error', function(err) {
+
+	}).end();
     };
 };	    
 

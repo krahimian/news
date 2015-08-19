@@ -68,7 +68,9 @@ module.exports = {
 
 		    cb();
 
-		}).on('error', function() {}).end();
+		}).on('error', function(err) {
+
+		}).end();
 	    },
 
 	    buildPost: function(entry, cb) {
@@ -119,7 +121,9 @@ module.exports = {
 			source.posts = results;
 			cb(err);
 		    });
-		}).on('error', function() {}).end();
+		}).on('error', function(err) {
+
+		}).end();
 	    }
 	};
     }
