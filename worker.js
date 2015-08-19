@@ -78,8 +78,8 @@ var Worker = function() {
 			embed_id: body.id || null
 		    }).where('id', post.id).asCallback(done);
 		}).on('error', function(err) {
-
-		}).end();
+		    self.log.error(err);
+		});
 	    };
 
 	    if (!source.id) {

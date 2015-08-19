@@ -46,8 +46,8 @@ module.exports = {
 
 		    cb();
 		}).on('error', function(err) {
-
-		}).end();
+		    opts.log.error(err);
+		});
 	    },
 
 	    buildPost: function(entry, cb) {
