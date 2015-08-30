@@ -1,23 +1,48 @@
 ///////////////////
-require('longjohn');
+//require('longjohn');
 ///////////////////
 
 /* global require, process */
-
+var cluster = require('cluster');
+var domain = require('domain');
 var config = require('./config');
 var log = require('log')(config.log);
-var Worker = require('./worker');
-var worker = new Worker();
-
-var knex = require('knex')({
-    client: 'mysql',
-    connection: config.db,
-    debug: true
-});
 
 log.info('process id', process.pid);
 
-worker.init({
-    db: knex,
-    log: log
-});
+if (cluster.isMaster) {
+
+    cluster.fork();
+
+    cluster.on('disconnect', function(worker) {
+	log.error('worker disconnect', worker);
+	cluster.fork();
+    });
+
+    cluster.on('exit', function(worker, code, signal) {
+	log.error('worker %d died, code (%s).', worker.process.pid, code, worker);
+    });
+
+} else {
+    var d = domain.create();
+    d.on('error', function(err) {
+	log.error(err);
+	cluster.worker.disconnect();
+    });
+
+    d.run(function() {
+	var Worker = require('./worker');
+	var worker = new Worker();
+
+	var knex = require('knex')({
+	    client: 'mysql',
+	    connection: config.db,
+	    debug: false
+	});
+	
+	worker.init({
+	    db: knex,
+	    log: log
+	});
+    });
+}
