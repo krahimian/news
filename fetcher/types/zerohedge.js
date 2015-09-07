@@ -4,11 +4,7 @@ var social = require('../../modules/social');
 var async = require('async');
 var cheerio = require('cheerio');
 
-var request = require('request').defaults({
-    headers: {
-	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'
-    }
-});
+var request = require('../../modules/request');
 
 module.exports = {
     re: /^(https?:\/\/)?(www\.)?zerohedge.com\/?$/i,
@@ -30,9 +26,7 @@ module.exports = {
 		var self = this;
 
 		request({
-		    method: 'GET',
-		    uri: source.url,
-		    gzip: true
+		    uri: source.url
 		}, function (error, response, body) {
 
 		    if (error) {
@@ -45,8 +39,6 @@ module.exports = {
 		    source.html = body;
 
 		    cb();
-		}).on('error', function(err) {
-		    opts.log.error(err);
 		});
 	    },
 
