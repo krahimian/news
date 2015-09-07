@@ -30,11 +30,13 @@ var URI = require('URIjs');
 var path = require('path');
 var social = require('../modules/social');
 var cheerio = require('cheerio');
-var request = require('request').defaults({
+var r = require('request').defaults({
     headers: {
 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'
     }
 });
+
+var request = require('../modules/request');
 
 var fetchers = [];
 
@@ -105,9 +107,7 @@ var defaultFetcher = function(opts) {
 	    var self = this;
 
 	    request({
-		method: 'GET',
-		uri: source.url,
-		gzip: true
+		uri: source.url
 	    }, function (error, response, body) {
 
 		if (error) {
@@ -123,8 +123,6 @@ var defaultFetcher = function(opts) {
 
 		cb();
 
-	    }).on('error', function(err) {
-		opts.log.error(err);
 	    });
 	},
 
@@ -152,7 +150,7 @@ var defaultFetcher = function(opts) {
 	    source.posts = [];
 	    var items = [];
 
-	    var req = request(source.feed);
+	    var req = r(source.feed);
 	    var feedparser = new FeedParser();
 
 	    req.on('error', cb);

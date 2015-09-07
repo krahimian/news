@@ -1,4 +1,4 @@
-var request = require('request');
+var request = require('./request');
 var async = require('async');
 
 var SocialScore = function(url, cb) {
@@ -34,8 +34,6 @@ var FacebookScore = function(url) {
 	    json: true
 	}, function(err, res, body) {
 	    cb(err, body[0]);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -52,8 +50,6 @@ var TwitterScore = function(url) {
 		result.count = body.count;
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -78,8 +74,6 @@ var RedditScore = function(url) {
 		});
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -96,8 +90,6 @@ var LinkedInScore = function(url) {
 		result.count = body.count;
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -114,8 +106,6 @@ var StumbleUponScore = function(url) {
 		result.views = parseInt(body.result.views, 10);
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -134,8 +124,6 @@ var GooglePlusScore = function(url) {
 		result.count = count ? parseInt(count[1], 10) : 0;
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -161,8 +149,6 @@ var PinterestScore = function(url) {
 		}
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };
@@ -184,8 +170,6 @@ var VKScore = function(url) {
 		}
 	    }
 	    cb(err, result);
-	}).on('error', function(err) {
-	    console.log(err);
 	});
     };
 };	    

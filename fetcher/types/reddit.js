@@ -5,11 +5,7 @@ var async = require('async');
 var URI = require('URIjs');
 var cheerio = require('cheerio');
 
-var request = require('request').defaults({
-    headers: {
-	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'
-    }
-});
+var request = require('../../modules/request');
 
 module.exports = {
     re: /^(https?:\/\/)?(www\.)?reddit.com\/r\/[^/\s]+\/?$/i,
@@ -53,9 +49,7 @@ module.exports = {
 		var self = this;
 
 		request({
-		    method: 'GET',
-		    uri: source.url,
-		    gzip: true
+		    uri: source.url
 		}, function (error, response, body) {
 
 		    if (error) {
@@ -68,8 +62,6 @@ module.exports = {
 
 		    cb();
 
-		}).on('error', function(err) {
-		    opts.log.error(err);
 		});
 	    },
 
@@ -89,10 +81,8 @@ module.exports = {
 	    getPosts: function(source, cb) {
 		var self = this;
 		var options = {
-		    method: 'GET',
 		    uri: source.url + '.json',
 		    headers: {},
-		    gzip: true,
 		    json: true
 		};
 
@@ -121,8 +111,6 @@ module.exports = {
 			source.posts = results;
 			cb(err);
 		    });
-		}).on('error', function(err) {
-		    opts.log.error(err);
 		});
 	    }
 	};

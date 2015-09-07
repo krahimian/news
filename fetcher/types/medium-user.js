@@ -5,11 +5,7 @@ var async = require('async');
 var URI = require('URIjs');
 var cheerio = require('cheerio');
 
-var request = require('request').defaults({
-    headers: {
-	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'
-    }
-});
+var request = require('../../modules/request');
 
 module.exports = {
     re: /^(https?:\/\/)?(www\.)?medium.com\/@[^/\s]+\/?$/i,
@@ -36,9 +32,7 @@ module.exports = {
 		var self = this;
 
 		request({
-		    method: 'GET',
-		    uri: source.url,
-		    gzip: true
+		    uri: source.url
 		}, function (error, response, body) {
 
 		    if (error) {
@@ -59,16 +53,12 @@ module.exports = {
 		    source.logo_url = self.getLogo(body);
 
 		    cb();
-		}).on('error', function(err) {
-		    opts.log.error(err);
 		});
 	    },
 
 	    getStats: function(id, cb) {
 		request({
-		    method: 'GET',
 		    uri: 'https://medium.com/p/' + id + '/upvotes',
-		    gzip: true,
 		    headers: {
 			'accept': 'application/json'
 		    }
@@ -88,8 +78,6 @@ module.exports = {
 		    }
 
 		    cb(null, count);
-		}).on('error', function(err) {
-		    opts.log.error(err);
 		});
 	    },
 
