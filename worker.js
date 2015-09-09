@@ -173,6 +173,11 @@ var Worker = function() {
 	    self.log.debug('checking...');
 	    var now = new Date();
 
+	    clearTimeout(self._checkTimeout);
+	    self._checkTimeout = setTimeout(function() {
+		throw new Error('Worker has not performed a check in 30 mins');
+	    }, 1800000);
+
 	    this.db('sources').select().where(function() {
 		this.where('update_agent', null);
 		this.where('update_started_at', null);
