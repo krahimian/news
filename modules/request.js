@@ -14,6 +14,7 @@ request.Request.request.defaults({
 var $ = function(opts, cb) {
     opts.gzip = true;
     opts.maxAttempts = 3;
+    opts.timeout = 30000;
 
     var d = domain.create();
 
