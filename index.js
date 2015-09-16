@@ -15,16 +15,17 @@ if (cluster.isMaster) {
     cluster.fork();
 
     cluster.on('disconnect', function(worker) {
-	log.error('worker disconnect', worker);
+	log.info('worker disconnect', worker);
 	cluster.fork();
     });
 
     cluster.on('exit', function(worker, code, signal) {
-	log.error('worker %d died, code (%s).', worker.process.pid, code, worker);
+	log.info('worker %d died, code (%c), signal(%s).', worker.process.pid, code, signal, worker);
     });
 
 } else {
     var d = domain.create();
+
     d.on('error', function(err) {
 	log.error(err);
 	cluster.worker.disconnect();
