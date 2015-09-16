@@ -102,13 +102,16 @@ var Worker = function() {
 	},
 
 	_savePosts: function(source, cb) {
-	    if (source.posts) {
-		source.posts.forEach(function(post) {
-		    post.source_id = source.id;
-		    post.created_at = new Date();
-		    post.updated_at = new Date();
-		});
+	    if (!source.posts || !source.posts.length) {
+		cb();
+		return;
 	    }
+
+	    source.posts.forEach(function(post) {
+		post.source_id = source.id;
+		post.created_at = new Date();
+		post.updated_at = new Date();
+	    });
 
 	    var sql = this.db('posts').insert(source.posts).toString();
 	    sql = sql + ' ON DUPLICATE KEY UPDATE score = VALUES(score), social_score = VALUES(social_score), updated_at = VALUES(updated_at)';
