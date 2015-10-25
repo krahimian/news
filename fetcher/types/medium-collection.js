@@ -44,8 +44,11 @@ module.exports = {
 		    source.data = {};
 		    
 		    try {
-			var globals = JSON.parse(/var GLOBALS = ([\s\S]+)\/\/ \]\]/ig.exec(body)[1]);
-			source.data = globals.embedded;
+			var str = /window\[\"obvInit\"\]\(([\s\S]+)\/\/ \]\]/ig.exec(body)[1];
+
+			str = str.replace(/\)([^\)]*)$/,'$1');
+			var globals = JSON.parse(str);
+			source.data = globals;
 			source.title = source.data.collection.name;
 		    } catch(e) {
 			opts.log.error(e);
