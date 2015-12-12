@@ -37,7 +37,7 @@ var Worker = function() {
 	    var update = {};
 
 	    if (err || source.fetch_failed) {
-		if (err) this.log.error(err);
+		if (err) this.log.error(err, source);
 
 		update.fetch_failures = source.fetch_failures || 0;
 		update.fetch_failures++;
