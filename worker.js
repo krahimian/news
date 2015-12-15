@@ -183,8 +183,8 @@ var Worker = function() {
 
 	    clearTimeout(self._checkTimeout);
 	    self._checkTimeout = setTimeout(function() {
-		throw new Error('Worker has not performed a check in 30 mins');
-	    }, 1800000);
+		throw new Error('Worker has not performed a check in 60 mins');
+	    }, 3600000);
 
 	    this.db('sources').select().where(function() {
 		this.where('update_agent', null);
