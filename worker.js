@@ -155,18 +155,23 @@ var Worker = function() {
 	},
 
 	_run: function(source, done) {
-	    this.log.debug('queue length', this.queue.length());
+	    var self = this;
+
+	    self.log.debug('queue length', self.queue.length());
 	    var fetcher = new Fetcher(source.url, {
-		log: this.log
+		log: self.log
 	    });
-	    async.applyEachSeries([
-		this._start.bind(this),
-		fetcher.build.bind(fetcher),
-		fetcher.getPosts.bind(fetcher),
-		this._savePosts.bind(this),
-		this._updateScore.bind(this),
-		this._updateSocialScore.bind(this)
-	    ], source, this._saveSource.bind(this, source, done));
+
+	    setTimeout(function() {
+		async.applyEachSeries([
+		    self._start.bind(self),
+		    fetcher.build.bind(fetcher),
+		    fetcher.getPosts.bind(fetcher),
+		    self._savePosts.bind(self),
+		    self._updateScore.bind(self),
+		    self._updateSocialScore.bind(self)
+		], source, self._saveSource.bind(self, source, done));
+	    }, 15000);
 	},
 
 	_check: function() {

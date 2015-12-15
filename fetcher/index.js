@@ -156,14 +156,12 @@ var defaultFetcher = function(opts) {
 	    req.on('error', cb);
 
 	    req.on('response', function (res) {
-		var stream = this;
-
 		if (res.statusCode !== 200) {
-		    this.emit('error', new Error('Bad status code'));
+		    res.emit('error', new Error('Bad status code'));
 		    return;
 		}
 
-		stream.pipe(feedparser);
+		res.pipe(feedparser);
 	    });
 
 

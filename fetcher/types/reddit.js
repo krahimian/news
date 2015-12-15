@@ -82,7 +82,9 @@ module.exports = {
 		var self = this;
 		var options = {
 		    uri: source.url + '.json',
-		    headers: {},
+		    headers: {
+			'User-Agent': 'zer0.news bot by u/t3rr0r'
+		    },
 		    json: true
 		};
 
