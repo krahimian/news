@@ -4,7 +4,7 @@ var os = require('os');
 var uuid = require('uuid');
 var async = require('async');
 var request = require('request');
-var Fetcher = require('./fetcher');
+var Fetcher = require('fetcher');
 
 var UPDATE_TIME = 1000 * 60 * 15; //15 minutes
 var FAILED_TIME = 1000 * 60 * 5; // 5 minutes
@@ -102,6 +102,7 @@ var Worker = function() {
 	},
 
 	_savePosts: function(source, cb) {
+
 	    if (!source.posts || !source.posts.length) {
 		cb();
 		return;
@@ -158,7 +159,7 @@ var Worker = function() {
 	    var self = this;
 
 	    self.log.debug('queue length', self.queue.length());
-	    var fetcher = new Fetcher(source.url, {
+	    var fetcher = new Fetcher(source.feed_url, {
 		log: self.log
 	    });
 
@@ -186,7 +187,11 @@ var Worker = function() {
 		throw new Error('Worker has not performed a check in 60 mins');
 	    }, 3600000);
 
-	    this.db('sources').select().where(function() {
+	    var q = this.db('sources').select();
+
+	    q.innerJoin('channels_sources', 'channels_sources.source_id', 'sources.id');
+
+	    q.where(function() {
 		this.where('update_agent', null);
 		this.where('update_started_at', null);
 		this.where('updated_at', '<', new Date(now.setTime(now.getTime() - UPDATE_TIME)));
