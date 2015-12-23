@@ -6,6 +6,7 @@
 var cluster = require('cluster');
 var domain = require('domain');
 var config = require('./config');
+var Worker = require('./worker');
 var log = require('log')(config.log);
 
 log.info('process id', process.pid);
@@ -20,7 +21,7 @@ if (cluster.isMaster) {
     });
 
     cluster.on('exit', function(worker, code, signal) {
-	log.info('worker %d died, code (%c), signal(%s).', worker.process.pid, code, signal, worker);
+	log.info('worker %d died, signal(%s).', worker.process.pid, signal, worker);
     });
 
 } else {
@@ -32,13 +33,12 @@ if (cluster.isMaster) {
     });
 
     d.run(function() {
-	var Worker = require('./worker');
 	var worker = new Worker();
 
 	var knex = require('knex')({
 	    client: 'mysql',
 	    connection: config.db,
-	    debug: false
+	    debug: true
 	});
 	
 	worker.init({
