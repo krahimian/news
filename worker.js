@@ -58,49 +58,6 @@ var Worker = function() {
 	    this.db('sources').update(update).where('id', source.id).asCallback(cb);
 	},
 
-	_getEmbeds: function(source, cb) {
-	    var self = this;
-
-	    var getIframely = function(post, done) {
-		request({
-		    method: 'GET',
-		    url: 'http://open.iframe.ly/api/oembed?url=' + (post.content_url || post.url) + '&origin=krahimian',
-		    json: true,
-		    gzip: true
-		}, function(err, res, body) {
-		    if (err) {
-			done(err);
-			return;
-		    }
-
-		    self.db('posts').update({
-			embed: body.html || '<div></div>',
-			embed_id: body.id || null
-		    }).where('id', post.id).asCallback(done);
-		}).on('error', function(err) {
-		    self.log.error(err);
-		});
-	    };
-
-	    if (!source.id) {
-		cb();
-		return;
-	    }
-
-	    var query = self.db('posts');
-	    query.select();
-	    query.where('source_id', source.id);
-	    query.whereNull('embed');
-	    query.whereRaw('created_at >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -14 DAY)');
-	    query.orderBy('created_at','desc');
-	    query.limit(20);
-	    query.then(function(result) {
-		async.eachSeries(result, getIframely, cb);
-	    }).catch(function(error) {
-		cb(error);
-	    });
-	},
-
 	_savePosts: function(source, cb) {
 
 	    if (!source.posts || !source.posts.length) {
