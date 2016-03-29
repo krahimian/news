@@ -26,14 +26,15 @@ if (cluster.isMaster) {
 
 } else {
     var d = domain.create();
+    var worker;
 
     d.on('error', function(err) {
-	log.error(err);
+	log.error(err, worker.queue);
 	cluster.worker.disconnect();
     });
 
     d.run(function() {
-	var worker = new Worker();
+	worker = new Worker();
 
 	var knex = require('knex')({
 	    client: 'mysql',
