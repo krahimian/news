@@ -141,7 +141,7 @@ var Worker = function() {
 
 	    clearTimeout(self._checkTimeout);
 	    self._checkTimeout = setTimeout(function() {
-		throw new Error('Worker has not performed a check in 60 mins: ' + self.queue.workersList());
+		throw new Error('Worker has not performed a check in 60 mins');
 	    }, 3600000);
 
 	    var q = this.db('sources').select();
