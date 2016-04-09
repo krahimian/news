@@ -29,7 +29,8 @@ if (cluster.isMaster) {
     var worker;
 
     d.on('error', function(err) {
-	log.error(err, worker.queue);
+	if (err !== 'reset')
+	    log.error(err, worker.queue);
 	cluster.worker.disconnect();
     });
 
