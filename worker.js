@@ -4,6 +4,7 @@ var os = require('os');
 var uuid = require('uuid');
 var async = require('async');
 var Fetcher = require('fetcher');
+var cluster = require('cluster');
 
 var UPDATE_TIME = 1000 * 60 * 15; //15 minutes
 var FAILED_TIME = 1000 * 60 * 5; // 5 minutes
@@ -36,7 +37,6 @@ var Worker = function() {
 	    var update = {};
 
 	    if (err || source.fetch_failed) {
-		if (err) this.log.error('worker job error: ' + err, source);
 
 		update.fetch_failures = source.fetch_failures || 0;
 		update.fetch_failures++;
@@ -140,7 +140,7 @@ var Worker = function() {
 
 	    clearTimeout(self._checkTimeout);
 	    self._checkTimeout = setTimeout(function() {
-		throw new Error('reset');
+		cluster.worker.disconnect();
 	    }, 3600000);
 
 	    var q = this.db('sources').select();
