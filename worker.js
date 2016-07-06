@@ -5,6 +5,13 @@ var uuid = require('uuid');
 var async = require('async');
 var Fetcher = require('fetcher');
 var cluster = require('cluster');
+var moment = require('moment');
+var config = require('./config');
+var watson = require('watson-developer-cloud');
+var alchemy_language = watson.alchemy_language({
+    api_key: config.alchemy
+});
+
 
 var UPDATE_TIME = 1000 * 60 * 15; //15 minutes
 var FAILED_TIME = 1000 * 60 * 5; // 5 minutes
@@ -32,11 +39,11 @@ var Worker = function() {
 	    }).where('id', source.id).asCallback(cb);
 	},
 
-	_saveSource: function(source, cb, err) {
+	_saveSource: function(source, cb) {
 
 	    var update = {};
 
-	    if (err || source.fetch_failed) {
+	    if (source.fetch_failed) {
 
 		update.fetch_failures = source.fetch_failures || 0;
 		update.fetch_failures++;
@@ -68,6 +75,7 @@ var Worker = function() {
 		post.source_id = source.id;
 		post.created_at = new Date();
 		post.updated_at = new Date();
+		post.published_at = new Date();
 	    });
 
 	    var sql = this.db('posts').insert(source.posts).toString();
@@ -127,8 +135,237 @@ var Worker = function() {
 		    self._savePosts.bind(self),
 		    self._updateScore.bind(self),
 		    self._updateSocialScore.bind(self)
-		], source, self._saveSource.bind(self, source, done));
+		], source, function(err) {
+		    if (err) source.fetch_failed = true;
+
+		    self._saveSource(source, function() {
+			self._analyzePosts(done);
+		    });
+
+		});
 	    }, 15000);
+	},
+
+	_analyzePost: function(post, done) {
+	    var self = this;
+	    var saveKeyword = function(k, next) {
+		async.waterfall([
+		    function(cb) {
+			self.db.select('*').from('keywords').where('text', k.text).asCallback(cb);
+		    },
+		    function(result, cb) {
+			if (result.length) {
+			    cb(null, result);
+			    return;
+			}
+
+			self.db('keywords').insert({
+			    text: k.text
+			}).asCallback(function(err) {
+			    if (err) {
+				cb(err);
+				return;
+			    }
+
+			    self.db.select('*').from('keywords').where('text', k.text).asCallback(cb);
+			});
+		    }
+		], function(err, result) {
+		    if (err) {
+			next(err);
+			return;
+		    }
+
+		    self.db('keywords_posts').insert({
+			post_id: post.id,
+			keyword_id: result[0].id,
+			relevance: k.relevance
+		    }).asCallback(function(err) {
+			if (err) self.log.error(err);
+			next();
+		    });
+		});
+	    };
+	    var saveEntity = function(e, next) {
+		async.waterfall([
+		    function(cb) {
+			self.db.select('*').from('entities').where('text', e.text).asCallback(cb);
+		    },
+		    function(result, cb) {
+			if (result.length) {
+			    cb(null, result);
+			    return;
+			}
+
+			self.db('entities').insert({
+			    text: e.text,
+			    type: e.type,
+			    geo: e.disambiguated ? e.disambiguated.geo : '',
+			    website: e.disambiguated ? e.disambiguated.website : '',
+			    dbpedia: e.disambiguated ? e.disambiguated.dbpedia : '',
+			    freebase: e.disambiguated ? e.disambiguated.freebase : '',
+			    opencyc: e.disambiguated ? e.disambiguated.opencyc : '',
+			    yago: e.disambiguated ? e.disambiguated.yago : '',
+			    crunchbase: e.disambiguated ? e.disambiguated.crunchbase : '',
+			    musicbrainz: e.disambiguated ? e.disambiguated.musicbrainz : '',
+			    geonames: e.disambiguated ? e.disambiguated.geonames : '',
+			    census: e.disambiguated ? e.disambiguated.census : '',
+			    ciaFactbook: e.disambiguated ? e.disambiguated.ciaFactbook : ''
+			}).asCallback(function(err) {
+			    if (err) {
+				cb(err);
+				return;
+			    }
+			    self.db.select('*').from('entities').where('text', e.text).asCallback(cb);
+			});
+		    }
+		], function(err, result) {
+		    if (err) {
+			next(err);
+			return;
+		    }
+		    self.db('entities_posts').insert({
+			post_id: post.id,
+			entity_id: result[0].id,
+			relevance: e.relevance
+		    }).asCallback(function(err) {
+			if (err) self.log.error(err);
+			next();
+		    });
+		});
+	    };
+
+	    var saveConcept = function(c, next) {
+		async.waterfall([
+		    function(cb) {
+			self.db.select('*').from('concepts').where('text', c.text).asCallback(cb);
+		    },
+		    function(result, cb) {
+			if (result.length) {
+			    cb(null, result);
+			    return;
+			}
+
+			self.db('concepts').insert({
+			    text: c.text,
+			    geo: c.geo,
+			    website: c.website,
+			    dbpedia: c.dbpedia,
+			    freebase: c.freebase,
+			    opencyc: c.opencyc,
+			    yago: c.yago,
+			    crunchbase: c.crunchbase,
+			    musicbrainz: c.musicbrainz,
+			    geonames: c.geonames,
+			    census: c.census,
+			    ciaFactbook: c.ciaFactbook
+			}).asCallback(function(err) {
+			    if (err) {
+				cb(err);
+				return;
+			    }
+			    self.db.select('*').from('concepts').where('text', c.text).asCallback(cb);
+			});
+		    }
+		], function(err, result) {
+		    if (err) {
+			next(err);
+			return;
+		    }
+		    self.db('concepts_posts').insert({
+			post_id: post.id,
+			concept_id: result[0].id,
+			relevance: c.relevance
+		    }).asCallback(function(err) {
+			if (err) self.log.error(err);
+			next();
+		    });
+		});
+	    };
+
+	    var params = {
+		url: post.content_url || post.url
+		, extract: (
+		    'concepts'
+		    //+ ', dates'
+			+ ', doc-emotion'
+			+ ', entities'
+		    //+ ', feeds'
+		    + ', keywords'
+			+ ', pub-date'
+		    //+ ', relations'
+		    //+ ', typed-rels'
+			+ ', doc-sentiment'
+		    //+ ', taxonomy'
+			+ ', title'
+		)
+		//, showSourceText: 1
+	    };
+
+	    alchemy_language.combined(params, function (err, response) {
+		if (err) {
+		    self.log.error(err);
+		    done();
+		    return;
+		}
+
+		self.log.debug(JSON.stringify(response, null, 2));
+
+		var output = {};
+		output.sentiment = response.docSentiment.score;
+		output.analyzed_at = new Date();
+
+		if (response.publicationDate.confident)
+		    output.published_at = moment(response.publicationDate.date).format();
+
+		if (response.docEmotions) {
+		    Object.keys(response.docEmotions).forEach(function(d, i) {
+			output[d] = response.docEmotions[d];
+		    });
+		}
+
+		async.parallel([
+		    function(cb) {
+			async.eachSeries(response.entities, saveEntity, cb);
+		    },
+		    function(cb) {
+			async.eachSeries(response.concepts, saveConcept, cb);
+		    },
+		    function(cb) {
+			async.eachSeries(response.keywords, saveKeyword, cb);
+		    }
+		], function(err) {
+		    if (err) {
+			done(err);
+			return;
+		    }
+
+		    self.db('posts').update(output).where('id', post.id).asCallback(done);
+		});
+	    });
+	},
+
+	_analyzePosts: function(cb) {
+	    var self = this;
+
+	    var q = self.db('posts').select('posts.*');
+	    q.select(self.db.raw('(LOG10(posts.score / sources.score_avg) - TIMESTAMPDIFF(SECOND, posts.created_at, NOW()) / 45000) as strength'));
+	    q.join('sources', 'sources.id', 'posts.source_id');
+	    q.join('channels_sources', 'channels_sources.source_id', 'sources.id');
+	    q.where('channels_sources.channel_id', 1);
+	    q.whereNull('posts.analyzed_at');
+	    q.whereRaw('posts.created_at > (NOW() - INTERVAL 12 HOUR)');
+	    q.orderBy('strength', 'desc');
+	    q.limit(10);
+
+	    q.asCallback(function(err, posts) {
+		if (err) {
+		    cb(err);
+		    return;
+		}
+
+		async.eachSeries(posts, self._analyzePost.bind(self), cb);
+	    });
 	},
 
 	_check: function() {
