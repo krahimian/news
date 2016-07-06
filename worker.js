@@ -289,12 +289,11 @@ var Worker = function() {
 			+ ', entities'
 		    //+ ', feeds'
 		    + ', keywords'
-			+ ', pub-date'
 		    //+ ', relations'
 		    //+ ', typed-rels'
 			+ ', doc-sentiment'
 		    //+ ', taxonomy'
-			+ ', title'
+		    //+ ', title'
 		)
 		//, showSourceText: 1
 	    };
@@ -318,9 +317,6 @@ var Worker = function() {
 		var output = {};
 		output.sentiment = response.docSentiment.score;
 		output.analyzed_at = new Date();
-
-		if (response.publicationDate.confident)
-		    output.published_at = moment(response.publicationDate.date).format();
 
 		if (response.docEmotions) {
 		    Object.keys(response.docEmotions).forEach(function(d, i) {
