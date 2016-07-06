@@ -181,7 +181,6 @@ var Worker = function() {
 			keyword_id: result[0].id,
 			relevance: k.relevance
 		    }).asCallback(function(err) {
-			if (err) self.log.error(err);
 			next();
 		    });
 		});
@@ -229,7 +228,6 @@ var Worker = function() {
 			entity_id: result[0].id,
 			relevance: e.relevance
 		    }).asCallback(function(err) {
-			if (err) self.log.error(err);
 			next();
 		    });
 		});
@@ -277,7 +275,6 @@ var Worker = function() {
 			concept_id: result[0].id,
 			relevance: c.relevance
 		    }).asCallback(function(err) {
-			if (err) self.log.error(err);
 			next();
 		    });
 		});
@@ -304,7 +301,14 @@ var Worker = function() {
 
 	    alchemy_language.combined(params, function (err, response) {
 		if (err) {
-		    self.log.error(err);
+		    var excluded_errors = ['page-is-not-html', 'cannot-retrieve', 'daily-transaction-limit-exceeded'];
+		    var error = err.error;
+		    if (error.indexOf(':') !== -1)
+			error = error.susbtr(0, err.error.indexOf(':'));
+		    
+		    if (excluded_errors.indexOf(error) === -1)
+			self.log.error(err);
+
 		    done();
 		    return;
 		}
@@ -354,7 +358,7 @@ var Worker = function() {
 	    q.join('channels_sources', 'channels_sources.source_id', 'sources.id');
 	    q.where('channels_sources.channel_id', 1);
 	    q.whereNull('posts.analyzed_at');
-	    q.whereRaw('posts.created_at > (NOW() - INTERVAL 12 HOUR)');
+	    q.whereRaw('posts.created_at > (NOW() - INTERVAL 6 HOUR)');
 	    q.orderBy('strength', 'desc');
 	    q.limit(10);
 
