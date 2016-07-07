@@ -300,7 +300,12 @@ var Worker = function() {
 
 	    alchemy_language.combined(params, function (err, response) {
 		if (err) {
-		    var excluded_errors = ['page-is-not-html', 'cannot-retrieve', 'daily-transaction-limit-exceeded'];
+		    var excluded_errors = [
+			'page-is-not-html',
+			'cannot-retrieve',
+			'daily-transaction-limit-exceeded',
+			'unsupported-text-language'
+		    ];
 		    var error = err.error;
 		    if (error.indexOf(':') !== -1)
 			error = error.susbtr(0, err.error.indexOf(':'));
