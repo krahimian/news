@@ -302,6 +302,7 @@ var Worker = function() {
 		if (err) {
 		    var excluded_errors = [
 			'page-is-not-html',
+			'content-is-empty',
 			'cannot-retrieve',
 			'daily-transaction-limit-exceeded',
 			'unsupported-text-language'
