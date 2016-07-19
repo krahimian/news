@@ -355,7 +355,7 @@ var Worker = function() {
 	    var self = this;
 
 	    var q = self.db('posts').select('posts.*');
-	    q.select(self.db.raw('(LOG10(posts.score / sources.score_avg) - TIMESTAMPDIFF(SECOND, posts.created_at, NOW()) / 90000) as strength'));
+	    q.select(self.db.raw('(LOG10(posts.score / sources.score_avg) - TIMESTAMPDIFF(SECOND, posts.created_at, NOW()) / 10800) as strength'));
 	    q.join('sources', 'sources.id', 'posts.source_id');
 	    q.join('channels_sources', 'channels_sources.source_id', 'sources.id');
 	    q.where('channels_sources.channel_id', 1);
