@@ -157,6 +157,9 @@ var Worker = function() {
 
     _analyzePost: function(post, done) {
       var self = this;
+
+      self.log.info('analyzing post: ', post.id)
+
       var saveKeyword = function(k, next) {
 	async.waterfall([
 	  function(cb) {
@@ -290,8 +293,8 @@ var Worker = function() {
       };
 
       var params = {
-	url: post.content_url || post.url
-	, extract: (
+	url: post.content_url || post.url,
+	extract: (
 	  'concepts'
 	  //+ ', dates'
 	  //+ ', doc-emotion'
@@ -320,7 +323,7 @@ var Worker = function() {
 	  if (error.indexOf(':') !== -1)
 	    error = error.susbtr(0, err.error.indexOf(':'));
 
-	  if ('daily-transaction-limit-exceeded') {
+	  if (error === 'daily-transaction-limit-exceeded') {
 	    alchemy_language = watson.alchemy_language({
 	      api_key: get_alchemy_key()
 	    })
@@ -328,16 +331,20 @@ var Worker = function() {
 
 	  if (excluded_errors.indexOf(error) === -1)
 	    self.log.error(err);
+	  else
+	    self.log.warn(err)
 
-	  done();
-	  return;
+	  return done();
 	}
 
 	self.log.debug(JSON.stringify(response, null, 2));
 
-	var output = {};
-	output.sentiment = response.docSentiment.score;
-	output.analyzed_at = new Date();
+	var output = {
+	  analyzed_at: new Date()
+	};
+
+	if (response.docSentiment)
+	  output.sentiment = response.docSentiment.score;
 
 	if (response.docEmotions) {
 	  Object.keys(response.docEmotions).forEach(function(d, i) {
