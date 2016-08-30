@@ -7,10 +7,10 @@ var Fetcher = require('fetcher');
 var cluster = require('cluster');
 var moment = require('moment');
 var config = require('./config');
-var watson = require('watson-developer-cloud');
+var AlchemyLanguageV1 = require('watson-developer-cloud/alchemy-language/v1');
 
 var alchemy_key_index = 0
-var alchemy_language = watson.alchemy_language({
+var alchemy_language = new AlchemyLanguageV1({
   api_key: config.alchemy[alchemy_key_index]
 });
 
@@ -324,7 +324,7 @@ var Worker = function() {
 	    error = error.susbtr(0, err.error.indexOf(':'));
 
 	  if (error === 'daily-transaction-limit-exceeded') {
-	    alchemy_language = watson.alchemy_language({
+	    alchemy_language = new AlchemyLanguageV1({
 	      api_key: get_alchemy_key()
 	    })
 	  }
