@@ -16,7 +16,7 @@ var alchemy_language = new AlchemyLanguageV1({
 
 var get_alchemy_key = function() {
   alchemy_key_index++
-  if (alchemy_key_index > config.alchemy.length)
+  if (alchemy_key_index >= config.alchemy.length)
     alchemy_key_index = 0
 
   return config.alchemy[alchemy_key_index]
