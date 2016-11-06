@@ -7,20 +7,20 @@ var Fetcher = require('fetcher');
 var cluster = require('cluster');
 var moment = require('moment');
 var config = require('./config');
-var AlchemyLanguageV1 = require('watson-developer-cloud/alchemy-language/v1');
 
-var alchemy_key_index = 0
-var alchemy_language = new AlchemyLanguageV1({
-  api_key: config.alchemy[alchemy_key_index]
-});
+// var AlchemyLanguageV1 = require('watson-developer-cloud/alchemy-language/v1');
+// var alchemy_key_index = 0
+// var alchemy_language = new AlchemyLanguageV1({
+//   api_key: config.alchemy[alchemy_key_index]
+// });
 
-var get_alchemy_key = function() {
-  alchemy_key_index++
-  if (alchemy_key_index >= config.alchemy.length)
-    alchemy_key_index = 0
+// var get_alchemy_key = function() {
+//   alchemy_key_index++
+//   if (alchemy_key_index >= config.alchemy.length)
+//     alchemy_key_index = 0
 
-  return config.alchemy[alchemy_key_index]
-}
+//   return config.alchemy[alchemy_key_index]
+// }
 
 var UPDATE_TIME = 1000 * 60 * 15; //15 minutes
 var FAILED_TIME = 1000 * 60 * 5; // 5 minutes
@@ -147,9 +147,10 @@ var Worker = function() {
 	], source, function(err) {
 	  if (err) source.fetch_failed = true;
 
-	  self._saveSource(source, function() {
-	    self._analyzePosts(done);
-	  });
+	  self._saveSource(source, done);
+	  // self._saveSource(source, function() {
+	  //   self._analyzePosts(done);
+	  // });
 
 	});
       }, 15000);
