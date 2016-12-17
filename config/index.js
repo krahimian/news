@@ -1,19 +1,30 @@
 /* global require, module */
 
-var fs = require('fs');
+var fs = require('fs')
+var path = require('path')
+var home = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE
 
-var config;
-var config_file = '/home/deploy/apps.json';
+var homedir = function(s) {
+  return path.resolve(path.dirname(home), s)
+}
+
+var config
+var config_file = homedir('apps.json')
+var deploy_file = '/home/deploy/apps.json'
 
 if (fs.existsSync(config_file)) {
 
-  config = JSON.parse(fs.readFileSync(config_file));
+  config = JSON.parse(fs.readFileSync(config_file))
+
+} else if (fs.existsSync(deploy_file)) {
+
+  config = JSON.parse(fs.readFileSync(deploy_file))
 
   var db = config.servers.filter(function(s) {
-    return s.roles.indexOf('db') > -1;
-  })[0];
+    return s.roles.indexOf('db') > -1
+  })[0]
 
-  config.db.host = db.internal_ip;
+  config.db.host = db.internal_ip
 
 } else {
 
@@ -34,11 +45,11 @@ if (fs.existsSync(config_file)) {
       user: 'root',
       charset  : 'UTF8_GENERAL_CI'
     }
-  };
+  }
 }
 
 if (!config) {
-  throw new Error('Application config missing');
+  throw new Error('Application config missing')
 }
 
-module.exports = config;
+module.exports = config
